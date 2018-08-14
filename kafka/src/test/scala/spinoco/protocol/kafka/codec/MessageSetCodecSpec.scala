@@ -3,7 +3,7 @@ package spinoco.protocol.kafka.codec
 
 import java.util.Date
 
-import kafka.message.{ByteBufferMessageSet, GZIPCompressionCodec, MessageAndOffset, SnappyCompressionCodec, Message => KMessage}
+import kafka.message.{ByteBufferMessageSet, GZIPCompressionCodec, MessageAndOffset, SnappyCompressionCodec, LZ4CompressionCodec, Message => KMessage}
 import spinoco.protocol.common.ProtocolSpec
 import scodec.{Attempt, DecodeResult}
 import scodec.bits.{BitVector, ByteVector}
@@ -94,6 +94,15 @@ class MessageSetCodecSpec extends ProtocolSpec {
 
       }
 
+      // "and fails when messages are compressed (LZ4) " in {
+      //   val buff = new ByteBufferMessageSet(LZ4CompressionCodec, kMessages0: _*)
+
+      //   val r = MessageSetCodec.messageSetCodec.decode(ByteVector(buff.getBuffer).bits)
+
+      //   r shouldBe Attempt.failure(Err("0/Message Entry/Message/V0: LZ4 Compression not yet supported"))
+
+      // }
+
     }
 
     "deserializes V1" - {
@@ -153,6 +162,28 @@ class MessageSetCodecSpec extends ProtocolSpec {
 
       }
 
+      "when messages are compressed (LZ4)" in {
+        val buff = new ByteBufferMessageSet(LZ4CompressionCodec, kMessages1: _*)
+
+        val r = MessageSetCodec.messageSetCodec.decode(ByteVector(buff.getBuffer).bits)
+
+        r shouldBe Attempt.successful {
+          DecodeResult(
+            Vector(
+              CompressedMessages(
+                offset = 2
+                , version = MessageVersion.V1
+                , compression = Compression.LZ4
+                , timeStamp = Some(CreateTime(now))
+                , messages = sMessages1
+              )
+            )
+            , BitVector.empty
+          )
+        }
+
+      }
+
     }
 
     "serializes V0" - {
@@ -175,6 +206,14 @@ class MessageSetCodecSpec extends ProtocolSpec {
 
       "when messages are compressed (Snappy)" in {
         val compressed = CompressedMessages(10,MessageVersion.V0,Compression.Snappy, None, sMessages0)
+        val encoded = MessageSetCodec.messageSetCodec.encode(Vector(compressed))
+        val kafkaSet = new ByteBufferMessageSet(encoded.map(_.toByteBuffer).getOrElse(fail("Failed to encode")))
+
+        kafkaSet.iterator.toVector.map { case MessageAndOffset(m,o) => kafka2Spinoco(m,o) } shouldBe sMessages0
+      }
+
+      "when messages are compressed (LZ4)" in {
+        val compressed = CompressedMessages(10,MessageVersion.V0,Compression.LZ4, None, sMessages0)
         val encoded = MessageSetCodec.messageSetCodec.encode(Vector(compressed))
         val kafkaSet = new ByteBufferMessageSet(encoded.map(_.toByteBuffer).getOrElse(fail("Failed to encode")))
 
@@ -205,6 +244,14 @@ class MessageSetCodecSpec extends ProtocolSpec {
 
       "when messages are compressed (Snappy)" in {
         val compressed = CompressedMessages(10,MessageVersion.V1,Compression.Snappy, Some(CreateTime(now)), sMessages1)
+        val encoded = MessageSetCodec.messageSetCodec.encode(Vector(compressed))
+        val kafkaSet = new ByteBufferMessageSet(encoded.map(_.toByteBuffer).getOrElse(fail("Failed to encode")))
+
+        kafkaSet.iterator.toVector.map { case MessageAndOffset(m,o) => kafka2Spinoco(m,o-8) } shouldBe sMessages1
+      }
+
+      "when messages are compressed (LZ4)" in {
+        val compressed = CompressedMessages(10,MessageVersion.V1,Compression.LZ4, Some(CreateTime(now)), sMessages1)
         val encoded = MessageSetCodec.messageSetCodec.encode(Vector(compressed))
         val kafkaSet = new ByteBufferMessageSet(encoded.map(_.toByteBuffer).getOrElse(fail("Failed to encode")))
 

@@ -5,6 +5,7 @@ import java.io.{ByteArrayInputStream, ByteArrayOutputStream, InputStream, Output
 import java.util.zip.{GZIPInputStream, GZIPOutputStream}
 
 import org.xerial.snappy.{SnappyInputStream, SnappyOutputStream}
+import org.apache.kafka.common.record.{KafkaLZ4BlockInputStream, KafkaLZ4BlockOutputStream}
 import scodec.Attempt
 import scodec.bits.ByteVector
 
@@ -36,6 +37,16 @@ object SnappyCompression {
 
 }
 
+object LZ4Compression {
+
+  /** deflates uncompressed bytes **/
+  def deflate(bv:ByteVector):Attempt[ByteVector] =
+  StreamCompression.inflate(bv)(new KafkaLZ4BlockOutputStream(_))
+
+  def inflate(bv:ByteVector):Attempt[ByteVector] =
+  StreamCompression.deflate(bv)(new KafkaLZ4BlockInputStream(_ , false))
+
+}
 
 object StreamCompression {
 

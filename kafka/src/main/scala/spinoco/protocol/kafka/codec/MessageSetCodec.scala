@@ -87,6 +87,7 @@ object MessageSetCodec {
           compressionType match {
             case Compression.GZIP => GZipCompression.inflate(v) flatMap decodeCompressed(Compression.GZIP)
             case Compression.Snappy => SnappyCompression.inflate(v) flatMap decodeCompressed(Compression.Snappy)
+            case Compression.LZ4 if version == MessageVersion.V1 => LZ4Compression.inflate(v) flatMap decodeCompressed(Compression.LZ4)
             case Compression.LZ4 => Attempt.failure(Err("LZ4 Compression not yet supported"))
           }
       }
@@ -117,7 +118,7 @@ object MessageSetCodec {
             cm.compression match {
               case Compression.GZIP => encodeCompressed(cm.messages).flatMap(GZipCompression.deflate)
               case Compression.Snappy => encodeCompressed(cm.messages).flatMap(SnappyCompression.deflate)
-              case Compression.LZ4 =>  Attempt.failure(Err("LZ4 Compression not yet supported"))
+              case Compression.LZ4 =>  encodeCompressed(cm.messages).flatMap(LZ4Compression.deflate)
             }
 
           val (timeFlag, time) = mkTime(cm.timeStamp)
