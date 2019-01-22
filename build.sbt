@@ -1,5 +1,3 @@
-import com.typesafe.sbt.pgp.PgpKeys.publishSigned
-
 val ReleaseTag = """^release/([\d\.]+a?)$""".r
 
 lazy val contributors = Seq(
@@ -11,7 +9,8 @@ lazy val contributors = Seq(
 
 
 lazy val commonSettings = Seq(
-   organization := "com.spinoco",
+   organization := "com.evolutiongaming",
+   bintrayOrganization := Some("evolutiongaming"),
    scalaVersion := "2.12.1",
   crossScalaVersions := Seq("2.11.8", "2.12.1"),
    scalacOptions ++= Seq(
@@ -37,6 +36,7 @@ lazy val commonSettings = Seq(
    scmInfo := Some(ScmInfo(url("https://github.com/Spinoco/protocol"), "git@github.com:Spinoco/protocol.git")),
    homepage := None,
    licenses += ("MIT", url("http://opensource.org/licenses/MIT")),
+   resolvers += Resolver.bintrayRepo("evolutiongaming", "maven"),
    initialCommands := s"""
   """
 ) ++ testSettings ++ scaladocSettings ++ publishingSettings ++ releaseSettings
@@ -59,17 +59,6 @@ lazy val scaladocSettings = Seq(
 )
 
 lazy val publishingSettings = Seq(
-  publishTo := {
-   val nexus = "https://oss.sonatype.org/"
-   if (version.value.trim.endsWith("SNAPSHOT"))
-     Some("snapshots" at nexus + "content/repositories/snapshots")
-   else
-     Some("releases" at nexus + "service/local/staging/deploy/maven2")
-  },
-  credentials ++= (for {
-   username <- Option(System.getenv().get("SONATYPE_USERNAME"))
-   password <- Option(System.getenv().get("SONATYPE_PASSWORD"))
-  } yield Credentials("Sonatype Nexus Repository Manager", "oss.sonatype.org", username, password)).toSeq,
   publishMavenStyle := true,
   pomIncludeRepository := { _ => false },
   pomExtra := {
@@ -97,14 +86,12 @@ lazy val publishingSettings = Seq(
 )
 
 lazy val releaseSettings = Seq(
-  releaseCrossBuild := true,
-  releasePublishArtifactsAction := PgpKeys.publishSigned.value
+  releaseCrossBuild := true
 )
 
 lazy val noPublish = Seq(
   publish := (),
   publishLocal := (),
-  publishSigned := (),
   publishArtifact := false
 )
 
