@@ -1,3 +1,10 @@
+# Disclaimer
+
+This is a temporary fork with purpose of publishing the build with the following merge request:
+https://github.com/Spinoco/protocol/pull/45
+
+For all other purposes please refer to https://github.com/Spinoco/protocol.
+
 # protocol
 
 This library contains various communication protocol decoders and encoders for scala. 
