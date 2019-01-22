@@ -1,0 +1,5 @@
+Some part of this software, including, but not limited to
+KafkaLZ4BlockInputStream and KafkaLZ4BlockOutputStream includes the code
+licensed under Apache License, Version 2.0.
+
+See the files in questions for more details.
