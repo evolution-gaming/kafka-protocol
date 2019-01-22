@@ -95,79 +95,12 @@ lazy val noPublish = Seq(
   publishArtifact := false
 )
 
-
 lazy val common =
   project.in(file("common"))
   .settings(commonSettings)
   .settings(
     name := "protocol-common"
   )
-
-lazy val mime =
-  project.in(file("mime"))
-  .settings(commonSettings)
-  .settings(
-    name := "protocol-mime"
-  )
-  .dependsOn(common)
-
-lazy val mail =
-  project.in(file("mail"))
-  .settings(commonSettings)
-  .settings(
-    name := "protocol-mail"
-  )
-  .dependsOn(common, mime)
-
-lazy val rtp =
-  project.in(file("rtp"))
-  .settings(commonSettings)
-  .settings(
-    name := "protocol-rtp"
-  )
-  .dependsOn(common)
-
-lazy val stun =
-  project.in(file("stun"))
-  .settings(commonSettings)
-  .settings(
-    name := "protocol-stun"
-  )
-  .dependsOn(common)
-
-
-lazy val webSocket =
-  project.in(file("websocket"))
-  .settings(commonSettings)
-  .settings(
-    name := "protocol-websocket"
-  )
-  .dependsOn(common)
-
-lazy val http =
-  project.in(file("http"))
-  .settings(commonSettings)
-  .settings(
-    name := "protocol-http"
-  )
-  .dependsOn(common, mime)
-
-
-
-
-lazy val sdp =
-  project.in(file("sdp"))
-    .settings(commonSettings)
-    .settings(
-      name := "protocol-sdp"
-    ).dependsOn(common)
-
-lazy val mgcp =
-  project.in(file("mgcp"))
-    .settings(commonSettings)
-    .settings(
-      name := "protocol-mgcp"
-    ).dependsOn(common, sdp)
 
 lazy val kafka =
   project.in(file("kafka"))
@@ -178,42 +111,14 @@ lazy val kafka =
       "org.xerial.snappy" % "snappy-java" % "1.1.2.1"  // for supporting a Snappy compression of message sets
       , "org.lz4" % "lz4-java" % "1.4.1"  // for supporting a LZ4 compression of message sets
       , "org.apache.kafka" %% "kafka" % "0.10.2.0" % "test"
+      , "com.spinoco" %% "protocol-common" % "0.3.16"
     )
-  ).dependsOn(
-    common
-    , common % "test->test"
   )
-
-lazy val asn1 =
-  project.in(file("asn1"))
-  .settings(commonSettings)
-  .settings(
-    name := "protocol-asn1"
-  ).dependsOn(common)
-
-lazy val ldap =
-  project.in(file("ldap"))
-  .settings(commonSettings)
-  .settings(
-    name := "protocol-ldap"
-  ).dependsOn(common, asn1)
-
+ .dependsOn(common % "test->test")
 
 
 lazy val allProtocols =
   project.in(file("."))
  .settings(commonSettings)
  .settings(noPublish)
- .aggregate(
-   common
-   , mime
-   , mail
-   , stun
-   , webSocket, http
-   , rtp
-   , sdp
-   , mgcp
-   , kafka
-   , asn1
-   , ldap
- )
+ .aggregate(kafka)
