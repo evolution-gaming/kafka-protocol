@@ -1,3 +1,5 @@
+> **⚠️ Archived — no longer maintained.** This was a fork of [Spinoco/protocol](https://github.com/Spinoco/protocol); please use the upstream project instead.
+
 # Disclaimer
 
 This is a temporary fork with purpose of publishing the build with the following merge request:
